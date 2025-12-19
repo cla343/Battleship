@@ -1,0 +1,19 @@
+# Ignore everything outside this repo
+../*
+../../*
+
+# Ignore system files
+*.swp
+*.swo
+*.DS_Store
+*.log
+*.tmp
+
+# Node/npm files (if any)
+node_modules/
+package-lock.json
+
+# VSCode settings
+.vscode/
+
+
