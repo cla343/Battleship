@@ -1,4 +1,4 @@
-const Ship = require("./index"); // Make sure Ship is correctly imported
+const { Ship, Gameboard, Player } = require("./index");
 
 describe("Ship", () => {
   let ship; // This will hold an instance of the Ship class
@@ -32,5 +32,6 @@ describe("Ship", () => {
 
     ship.hit(); // Third hit
     expect(ship.isSunk()).toBe(true); // after 3 hits, it should be sunk
+    expect(endOfGame()).toBe(true); // game should end after all ships sunk
   });
 });
