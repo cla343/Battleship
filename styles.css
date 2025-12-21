@@ -1,0 +1,32 @@
+#player-board, #computer-board{
+    display: flex;
+    margin: 20px;
+    flex-direction: column;
+}
+
+.row {
+    display: flex;
+    justify-content: center;
+}
+
+.cell{
+    border: 1px solid black;
+    color: white;
+    width: 30px;
+    height: 30px;
+}
+
+.cell:hover{
+    background-color: rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+}
+
+.cell.hit:hover {
+    background-color: red;
+    cursor: not-allowed;
+}
+
+.cell.miss:hover {
+    background-color: black;
+    cursor: not-allowed;
+}

@@ -1,4 +1,4 @@
-const { Ship, Gameboard, Player } = require("./index");
+import { Ship, Gameboard, Player } from "./index.js";
 
 describe("Ship", () => {
   let ship; // This will hold an instance of the Ship class

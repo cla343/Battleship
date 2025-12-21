@@ -1,12 +1,24 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link href="styles.css" rel="stylesheet" />
-  </head>
-  <body>
-    <script type="module" src="index.js"></script>
-  </body>
+    <link href = "styles.css" rel= "stylesheet">
+</head>
+<body>
+
+<div id="ship-palette">
+  <div class="ship" data-name="Carrier" data-length="5">Carrier</div>
+  <div class="ship" data-name="Battleship" data-length="4">Battleship</div>
+  <div class="ship" data-name="Cruiser" data-length="3">Cruiser</div>
+  <div class="ship" data-name="Submarine" data-length="3">Submarine</div>
+  <div class="ship" data-name="Destroyer" data-length="2">Destroyer</div>
+</div>
+
+<div id="player-board"></div>
+<div id="computer-board"></div>
+
+ <script type = "module" src = "driver.js"></script>   
+</body>
 </html>
