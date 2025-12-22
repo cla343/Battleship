@@ -24,37 +24,69 @@ export class Ship {
 //Gameboards should keep track of missed attacks so they can display them properly.
 //Gameboards should be able to report whether or not all of their ships have been sunk.
 export class Gameboard {
-  constructor() {
-    this.ships = [];
-    this.size = 10;
-    this.board = [];
-    for (let i = 0; i < 10; i++) {
-      const row = [];
-      for (let j = 0; j < 10; j++) {
-        row.push({ x: i, y: j, state: "empty", ship: null });
+    constructor() {
+      this.ships = [];
+      this.size = 10;
+      this.board = [];
+  
+      for (let i = 0; i < 10; i++) {
+        const row = [];
+        for (let j = 0; j < 10; j++) {
+          row.push({ x: i, y: j, state: "empty", ship: null });
+        }
+        this.board.push(row);
       }
-      this.board.push(row);
+    } // ✅ constructor CLOSED here
+  
+    placeShip(ship, startX, startY, direction = "horizontal") {
+      const coords = [];
+  
+      for (let i = 0; i < ship.length; i++) {
+        let x = startX;
+        let y = startY;
+  
+        if (direction === "horizontal") y += i;
+        else x += i;
+  
+        if (
+          x >= this.size ||
+          y >= this.size ||
+          this.board[x][y].ship
+        ) {
+          return false;
+        }
+  
+        coords.push([x, y]);
+      }
+  
+      coords.forEach(([x, y]) => {
+        this.board[x][y].ship = ship;
+      });
+  
+      this.ships.push(ship);
+      return true;
+    }
+  
+    receiveAttack(x, y) {
+      const cell = this.board[x][y];
+  
+      if (cell.ship) {
+        if (cell.state !== "empty") return;
+        cell.ship.hit();
+        cell.state = "hit";
+      } else {
+        cell.state = "miss";
+      }
+    }
+  
+    endOfGame() {
+      return (
+        this.ships.length > 0 &&
+        this.ships.every(ship => ship.sunk)
+      );
     }
   }
-  //takes a pair of coordinates, determines whether or not the attack hit a ship and then sends the ‘hit’ function to the correct ship, or records the coordinates of the missed shot.
-  receiveAttack(x, y) {
-    const cell = this.board[x][y];
-
-    if(cell.ship){
-        if (cell.state !== "empty") return; // already attacked
-
-        cell.ship.hit();
-        cell.state= "hit";
-    } else {
-        cell.state = "miss";
-    }    
-    }
-
-    //if all opponents ships sunk you win, if all your ships sunk you lose
-    endOfGame(){
-        return this.ships.length > 0 && this.ships.every( ship => ship.sunk )
-    }
-    }
+  
 //There will be two types of players in the game, ‘real’ players and ‘computer’ players.
 //Each player object should contain its own gameboard.
 export class Player {
