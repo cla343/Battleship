@@ -3,22 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link href = "styles.css" rel= "stylesheet">
+    <title>Battleship Game</title>
+    <link href="styles.css" rel="stylesheet">
 </head>
 <body>
+    <h1>⚓ Battleship Game ⚓</h1>
 
-<div id="ship-palette">
-  <div class="ship" data-name="Carrier" data-length="5">Carrier</div>
-  <div class="ship" data-name="Battleship" data-length="4">Battleship</div>
-  <div class="ship" data-name="Cruiser" data-length="3">Cruiser</div>
-  <div class="ship" data-name="Submarine" data-length="3">Submarine</div>
-  <div class="ship" data-name="Destroyer" data-length="2">Destroyer</div>
-</div>
+    <div id="message"></div>
 
-<div id="player-board"></div>
-<div id="computer-board"></div>
+    <div id="game-container">
+        <div id="setup-panel">
+            <h3>⚙️ Setup</h3>
+            
+            <div id="ship-status">
+                <h3>Ships to Place:</h3>
+                <p>Loading...</p>
+            </div>
 
- <script type = "module" src = "driver.js"></script>   
+            <div id="ship-palette">
+                <div class="ship" data-name="Carrier" data-length="5">
+                    <span class="ship-icon">🚢</span>
+                    <span>Carrier</span>
+                </div>
+                <div class="ship" data-name="Battleship" data-length="4">
+                    <span class="ship-icon">⛴️</span>
+                    <span>Battleship</span>
+                </div>
+                <div class="ship" data-name="Cruiser" data-length="3">
+                    <span class="ship-icon">🛥️</span>
+                    <span>Cruiser</span>
+                </div>
+                <div class="ship" data-name="Submarine" data-length="3">
+                    <span class="ship-icon">🚤</span>
+                    <span>Submarine</span>
+                </div>
+                <div class="ship" data-name="Destroyer" data-length="2">
+                    <span class="ship-icon">⛵</span>
+                    <span>Destroyer</span>
+                </div>
+            </div>
+
+            <button id="start-game" disabled>🎯 Start Battle!</button>
+
+            <div id="instructions">
+                <h4>📋 How to Play:</h4>
+                <ul>
+                    <li>🖱️ Click a ship to select</li>
+                    <li>🔄 Click board to rotate</li>
+                    <li>✅ Double-click to place</li>
+                    <li>❌ Right-click to remove</li>
+                    <li>⎋ Press ESC to cancel</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="board-wrapper">
+            <div id="player-board"></div>
+        </div>
+
+        <div class="board-wrapper">
+            <div id="computer-board"></div>
+        </div>
+    </div>
+
+    <script type="module" src="driver.js"></script>   
 </body>
 </html>
