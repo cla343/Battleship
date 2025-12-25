@@ -353,23 +353,29 @@ document.addEventListener("mousemove", e => {
 /* =====================================================
    ROTATE SHIP ON CLICK
 ===================================================== */
+let clickTimer = null;
 document.querySelector("#player-board").addEventListener("click", e => {
   if (!selectedShip || !isPlacingShip) return;
   if (!e.target.classList.contains("cell")) return;
 
-  selectedDirection =
-    selectedDirection === "horizontal" ? "vertical" : "horizontal";
-
-  // Apply simple rotation
-  selectedShip.el.style.transform =
-    selectedDirection === "horizontal"
-      ? "rotate(0deg)"
-      : "rotate(90deg)";
+  // Clear any existing timer
+  clearTimeout(clickTimer);
   
-  // Update preview immediately
-  const x = Number(e.target.dataset.x);
-  const y = Number(e.target.dataset.y);
-  previewPlacement(x, y, selectedShip.length, selectedDirection, human.board);
+  // Set a timer to rotate only if double-click doesn't happen
+  clickTimer = setTimeout(() => {
+    selectedDirection =
+      selectedDirection === "horizontal" ? "vertical" : "horizontal";
+
+    selectedShip.el.style.transform =
+      selectedDirection === "horizontal"
+        ? "rotate(0deg)"
+        : "rotate(90deg)";
+    
+    // Update preview immediately
+    const x = Number(e.target.dataset.x);
+    const y = Number(e.target.dataset.y);
+    previewPlacement(x, y, selectedShip.length, selectedDirection, human.board);
+  }, 200);
 });
 
 /* =====================================================
@@ -378,6 +384,9 @@ document.querySelector("#player-board").addEventListener("click", e => {
 document.querySelector("#player-board").addEventListener("dblclick", e => {
   if (!selectedShip || !isPlacingShip) return;
   if (!e.target.classList.contains("cell")) return;
+
+  // Clear the click timer to prevent rotation
+  clearTimeout(clickTimer);
 
   const x = Number(e.target.dataset.x);
   const y = Number(e.target.dataset.y);
@@ -479,11 +488,37 @@ document.querySelector("#player-board").addEventListener("contextmenu", e => {
       selectedDirection = "horizontal";
       isPlacingShip = true;
 
-      newShipEl.style.position = "fixed";
-      newShipEl.style.opacity = "0.8";
-      newShipEl.style.zIndex = "1000";
-      newShipEl.style.pointerEvents = "none";
-      newShipEl.style.transformOrigin = "top left";
+      // Remove from parent to avoid inherited transforms/positions
+      const clone = newShipEl.cloneNode(true);
+      selectedShip.el = clone;
+      selectedShip.originalEl = newShipEl;
+      
+      // Hide original
+      newShipEl.style.visibility = "hidden";
+      
+      // Style the clone with minimal interference
+      clone.style.cssText = `
+        position: fixed;
+        opacity: 0.5;
+        z-index: 10000;
+        pointer-events: none;
+        margin: 0;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: 600;
+        font-size: 1em;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        cursor: grabbing;
+        user-select: none;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      `;
+      
+      document.body.appendChild(clone);
       
       showMessage(`Placing ${newShipEl.dataset.name}. Click to rotate, double-click to place. ESC to cancel.`, "info");
     });
