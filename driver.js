@@ -99,7 +99,7 @@ function updateShipStatus() {
   const remaining = requiredShips.filter(s => !s.placed);
   
   if (remaining.length === 0) {
-    statusEl.innerHTML += "<p style='color: green;'>✓ All ships placed! Click Start Game.</p>";
+    statusEl.innerHTML += "<p style='color: #4CAF50;'>✓ All ships placed! Click Start Game.</p>";
     document.querySelector("#start-game").disabled = false;
   } else {
     remaining.forEach(s => {
@@ -266,16 +266,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
       selectedShip = {
         el: shipEl,
-        length: Number(shipEl.dataset.length)
+        length: Number(shipEl.dataset.length),
+        originalParent: shipEl.parentElement
       };
 
       selectedDirection = "horizontal";
       isPlacingShip = true;
 
-      shipEl.style.position = "absolute";
-      shipEl.style.opacity = "0.7";
-      shipEl.style.zIndex = "1000";
-      shipEl.style.pointerEvents = "none";
+      // Remove from parent to avoid inherited transforms/positions
+      const clone = shipEl.cloneNode(true);
+      selectedShip.el = clone;
+      selectedShip.originalEl = shipEl;
+      
+      // Hide original
+      shipEl.style.visibility = "hidden";
+      
+      // Style the clone with minimal interference
+      clone.style.cssText = `
+        position: fixed;
+        opacity: 0.5;
+        z-index: 10000;
+        pointer-events: none;
+        margin: 0;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: 600;
+        font-size: 1em;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        cursor: grabbing;
+        user-select: none;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      `;
+      
+      document.body.appendChild(clone);
       
       showMessage(`Placing ${shipEl.dataset.name}. Click to rotate, double-click to place. ESC to cancel.`, "info");
     });
@@ -288,15 +316,19 @@ document.addEventListener("DOMContentLoaded", () => {
 document.addEventListener("mousemove", e => {
   if (!selectedShip || !isPlacingShip) return;
 
-  selectedShip.el.style.left = e.pageX + "px";
-  selectedShip.el.style.top = e.pageY + "px";
+  // Get actual ship dimensions each time (in case of rotation)
+  const rect = selectedShip.el.getBoundingClientRect();
+  
+  // Position with cursor at center
+  selectedShip.el.style.left = (e.clientX - rect.width / 2) + "px";
+  selectedShip.el.style.top = (e.clientY - rect.height / 2) + "px";
 
   // Show preview on player board
   const playerBoardEl = document.querySelector("#player-board");
-  const rect = playerBoardEl.getBoundingClientRect();
+  const boardRect = playerBoardEl.getBoundingClientRect();
   
-  if (e.clientX >= rect.left && e.clientX <= rect.right &&
-      e.clientY >= rect.top && e.clientY <= rect.bottom) {
+  if (e.clientX >= boardRect.left && e.clientX <= boardRect.right &&
+      e.clientY >= boardRect.top && e.clientY <= boardRect.bottom) {
     
     const cellEls = playerBoardEl.querySelectorAll(".cell");
     for (const cellEl of cellEls) {
@@ -328,6 +360,7 @@ document.querySelector("#player-board").addEventListener("click", e => {
   selectedDirection =
     selectedDirection === "horizontal" ? "vertical" : "horizontal";
 
+  // Apply simple rotation
   selectedShip.el.style.transform =
     selectedDirection === "horizontal"
       ? "rotate(0deg)"
@@ -369,7 +402,9 @@ document.querySelector("#player-board").addEventListener("dblclick", e => {
     shipData.ship = ship;
   }
 
+  // Remove both the clone and the original ship element
   selectedShip.el.remove();
+  selectedShip.originalEl.remove();
   selectedShip = null;
   isPlacingShip = false;
 
@@ -406,6 +441,55 @@ document.querySelector("#player-board").addEventListener("contextmenu", e => {
     shipData.placed = false;
     shipData.ship = null;
     
+    // Re-create the ship element in the palette
+    const palette = document.querySelector("#ship-palette");
+    const newShipEl = document.createElement("div");
+    newShipEl.className = "ship";
+    newShipEl.dataset.name = shipData.name;
+    newShipEl.dataset.length = shipData.length;
+    
+    const icon = document.createElement("span");
+    icon.className = "ship-icon";
+    // Match the emoji to the ship type
+    const emojis = {
+      "Carrier": "🚢",
+      "Battleship": "⛴️",
+      "Cruiser": "🛥️",
+      "Submarine": "🚤",
+      "Destroyer": "⛵"
+    };
+    icon.textContent = emojis[shipData.name];
+    
+    const name = document.createElement("span");
+    name.textContent = shipData.name;
+    
+    newShipEl.appendChild(icon);
+    newShipEl.appendChild(name);
+    
+    // Add click listener to the new ship element
+    newShipEl.addEventListener("click", () => {
+      if (isPlacingShip || gameStarted) return;
+
+      selectedShip = {
+        el: newShipEl,
+        length: Number(newShipEl.dataset.length),
+        originalParent: newShipEl.parentElement
+      };
+
+      selectedDirection = "horizontal";
+      isPlacingShip = true;
+
+      newShipEl.style.position = "fixed";
+      newShipEl.style.opacity = "0.8";
+      newShipEl.style.zIndex = "1000";
+      newShipEl.style.pointerEvents = "none";
+      newShipEl.style.transformOrigin = "top left";
+      
+      showMessage(`Placing ${newShipEl.dataset.name}. Click to rotate, double-click to place. ESC to cancel.`, "info");
+    });
+    
+    palette.appendChild(newShipEl);
+    
     renderBoard(human.board, document.querySelector("#player-board"), "Player Board", true);
     updateShipStatus();
     showMessage(`${shipData.name} removed. Click to place it again.`, "info");
@@ -418,13 +502,8 @@ document.querySelector("#player-board").addEventListener("contextmenu", e => {
 function cancelPlacement() {
   if (!selectedShip) return;
 
-  selectedShip.el.style.position = "";
-  selectedShip.el.style.opacity = "";
-  selectedShip.el.style.zIndex = "";
-  selectedShip.el.style.left = "";
-  selectedShip.el.style.top = "";
-  selectedShip.el.style.transform = "";
-  selectedShip.el.style.pointerEvents = "";
+  selectedShip.el.remove();
+  selectedShip.originalEl.style.visibility = "";
 
   // Clear preview
   document.querySelectorAll(".cell.preview-valid, .cell.preview-invalid").forEach(el => {
